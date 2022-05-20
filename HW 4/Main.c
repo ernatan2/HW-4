@@ -36,20 +36,21 @@ Student* readFromBinFile(const char* fileName);
 
 int main()
 {
-	
 
 	//Part A
 	int* coursesPerStudent = NULL;
 	int numberOfStudents = 0;
 	char*** students = makeStudentArrayFromFile("studentList.txt", &coursesPerStudent, &numberOfStudents);
-	factorGivenCourse(students, coursesPerStudent, numberOfStudents, "Advanced Topics in C", +5);
-	printStudentArray(students, coursesPerStudent, numberOfStudents);
-	//studentsToFile(students, coursesPerStudent, numberOfStudents); //this frees all memory. Part B fails if this line runs. uncomment for testing (and comment out Part B)
 	
-	//Part B
-	Student* transformedStudents = transformStudentArray(students, coursesPerStudent, numberOfStudents);
-	writeToBinFile("students.bin", transformedStudents, numberOfStudents);
-	Student* testReadStudents = readFromBinFile("students.bin");
+	//printStudentArray(students, coursesPerStudent, numberOfStudents);
+	//factorGivenCourse(students, coursesPerStudent, numberOfStudents, "Advanced Topics in C", +5);
+	//printStudentArray(students, coursesPerStudent, numberOfStudents);
+	//studentsToFile(students, coursesPerStudent, numberOfStudents); //this frees all memory. Part B fails if this line runs. uncomment for testing (and comment out Part B)
+	//
+	////Part B
+	//Student* transformedStudents = transformStudentArray(students, coursesPerStudent, numberOfStudents);
+	//writeToBinFile("students.bin", transformedStudents, numberOfStudents);
+	//Student* testReadStudents = readFromBinFile("students.bin");
 
 	//add code to free all arrays of struct Student
 
@@ -65,6 +66,7 @@ void countStudentsAndCourses(const char* fileName, int** coursesPerStudent, int*
 	FILE* studentList;
 	int counterOfStudents = 0, i = 1; //Creating intiger for counting
 	*numberOfStudents = 0;
+	int* pointer = 0;
 	studentList = fopen(fileName, "r"); //Set the file path
 	if (!studentList) {
 		printf("Error opening file\n");
@@ -82,21 +84,22 @@ void countStudentsAndCourses(const char* fileName, int** coursesPerStudent, int*
 			printf("Memory allocation faild\n");
 			exit(1);
 		}
-		tempBuffer[i-1] = fgetc(studentList); 
+		tempBuffer[i-1] = fgetc(studentList);
+		/*printf("%c", tempBuffer[i - 1]);*/
 		i++;
 		if ((tempBuffer[i-2] == '\n') || (feof(studentList))) {
 			if (!counterOfStudents) {
-				coursesPerStudent = (int*)malloc(sizeof(int*));
+				pointer = (int*)malloc(sizeof(int*));
 			}
 			else {
-				coursesPerStudent = realloc(coursesPerStudent, (counterOfStudents + 1) * sizeof(*coursesPerStudent));
+				pointer = realloc(pointer, (counterOfStudents + 1) * sizeof(*pointer));
 			}
 			if (!coursesPerStudent) {
 				printf("Memory allocation faild\n");
 				exit(1);
 			}
 			const char* lineBuffer = tempBuffer; //Creating a const string for the function
-			*(coursesPerStudent + counterOfStudents) = countPipes(lineBuffer, i); //Set the number of the pipes in the pointer
+			*(pointer+ counterOfStudents)= countPipes(lineBuffer, i);
 			counterOfStudents++;
 			*numberOfStudents = counterOfStudents; 
 			free(tempBuffer);
@@ -104,6 +107,12 @@ void countStudentsAndCourses(const char* fileName, int** coursesPerStudent, int*
 		}
 		
 	}
+	*(coursesPerStudent) = pointer; //Set the number of the pipes in the pointer
+	/*for (int i = 0; i < *numberOfStudents; i++) {
+		printf("%d", *(*coursesPerStudent + i));
+	}*/
+
+
 	fclose(studentList);
 }
 
@@ -122,7 +131,58 @@ int countPipes(const char* lineBuffer, int maxCount)
 
 char*** makeStudentArrayFromFile(const char* fileName, int** coursesPerStudent, int* numberOfStudents)
 {
-	//add code here
+	char*** studentList;
+	FILE* studentFile;
+	char temp[1023], check;
+	int cS = 0, cC = 0, cL = 0; //cS =counterStudent cC= counterCourses cL= counterLetters
+	studentFile = fopen(fileName, "r");
+	if (!studentFile) {
+		printf("Error opening file\n");
+		exit(1);
+	}
+	countStudentsAndCourses(fileName, coursesPerStudent, numberOfStudents);
+	studentList = (char*)malloc(*numberOfStudents * sizeof(char*));
+	if (!studentList) {
+		printf("Memory allocation faild\n");
+		exit(1);
+	}
+	
+	for (int i =0; i < *numberOfStudents; i++) {
+		studentList[i] = (char*)malloc(( * (*coursesPerStudent + i)) * 2);
+		if (!studentList[i]) {
+			printf("Memory allocation faild\n");
+			exit(1);
+		}
+	}
+	
+	//free(*coursesPerStudent);
+	while (!feof(studentFile)) {
+		temp[cL] = fgetc(studentFile);
+		if (temp[cL] == '|' || temp[cL] == ',' || temp[cL] == '\n') {
+			check = temp[cL];
+			temp[cL] = '\0';
+			studentList[cS][cC] = (char*)malloc(strlen(temp) + 1);
+			if (!studentList[cS][cC]) {
+				printf("Memory allocation faild\n");
+				exit(1);
+			}
+			strcpy(studentList[cS][cC], temp);
+			cL = 0;
+			cC++;
+			if (check == '\n') {
+				cC = 0;
+				cS++;
+			}
+		}
+		else {
+			cL++;
+		}
+	}
+	
+ 	printStudentArray(studentList, *coursesPerStudent, *numberOfStudents);
+	
+	fclose(studentFile);
+	return studentList;
 }
 
 void factorGivenCourse(char** const* students, const int* coursesPerStudent, int numberOfStudents, const char* courseName, int factor)
@@ -163,3 +223,66 @@ Student* transformStudentArray(char*** students, const int* coursesPerStudent, i
 {
 	//add code here
 }
+
+
+
+
+
+
+
+
+
+
+//if ((tempBuffer[i - 2] == '\n') || (feof(studentList))) {
+//	if (!counterOfStudents) {
+//		coursesPerStudent = (int*)malloc(sizeof(int*));
+//	}
+//	else {
+//		coursesPerStudent = realloc(coursesPerStudent, (counterOfStudents + 1) * sizeof(*coursesPerStudent));
+//	}
+//	if (!coursesPerStudent) {
+//		printf("Memory allocation faild\n");
+//		exit(1);
+//	}
+//	const char* lineBuffer = tempBuffer; //Creating a const string for the function
+//	pipe = countPipes(lineBuffer, i);
+//	pointer = &pipe;
+//	*(coursesPerStudent + counterOfStudents) = pointer; //Set the number of the pipes in the pointer
+//	counterOfStudents++;
+//	*numberOfStudents = counterOfStudents;
+//	free(tempBuffer);
+//	i = 1;
+//}
+
+//while (!feof(studentFile)) {
+//	temp = fgetc(studentFile);
+//	if (temp == '\n') {
+//		cS++;
+//		cC = 0;
+//	}
+//	if (temp == '|') {
+//		cC++;
+//		studentList[cS][cC] = (char*)malloc(sizeof(char) * cL);
+//		if (!studentList[cS][cC]) {
+//			printf("Memory allocation faild\n");
+//			exit(1);
+//		}
+//		for (int i = 0; i < cL; i++) {
+//			studentList[cS][cC][i] = tempPointer[i];
+//		}
+//		free(tempPointer);
+//		cL = 0;
+//	}
+//	if (!cL) {
+//		tempPointer = (char*)malloc(sizeof(char*));
+//	}
+//	else {
+//		tempPointer = realloc(tempPointer, sizeof(*(tempPointer + cL)) * (cL + 1));
+//	}
+//	if (!tempPointer) {
+//		printf("Memory allocation faild\n");
+//		exit(1);
+//	}
+//	*(tempPointer + cL) = temp;
+//	cL++;
+//}
