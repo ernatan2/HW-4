@@ -31,7 +31,7 @@ char*** makeStudentArrayFromFile(const char* fileName, int** coursesPerStudent, 
 void printStudentArray(const char* const* const* students, const int* coursesPerStudent, int numberOfStudents);
 void factorGivenCourse(char** const* students, const int* coursesPerStudent, int numberOfStudents, const char* courseName, int factor);
 void studentsToFile(char*** students, int* coursesPerStudent, int numberOfStudents);
-char** split(const char* str, const char* delimiter, int coursesPerStudent);
+char** split(char* str, const char* delimiter, int coursesPerStudent);
 
 //Part B
 Student* transformStudentArray(char*** students, const int* coursesPerStudent, int numberOfStudents);
@@ -51,21 +51,21 @@ int main()
 	countStudentsAndCourses("studentList.txt",
 		&coursesPerStudent, &numberOfStudents);*/
 
-	//printStudentArray(students, coursesPerStudent, numberOfStudents);
-	//factorGivenCourse(students, coursesPerStudent, numberOfStudents, "Advanced TopicounterStudent in C", +5);
-	//printStudentArray(students, coursesPerStudent, numberOfStudents);
-	//studentsToFile(students, coursesPerStudent, numberOfStudents); //this frees all memory. Part B fails if this line runs. uncomment for testing (and comment out Part B)
-	//
-	////Part B
-	//Student* transformedStudents = transformStudentArray(students, coursesPerStudent, numberOfStudents);
-	//writeToBinFile("students.bin", transformedStudents, numberOfStudents);
-	//Student* testReadStudents = readFromBinFile("students.bin");
+		//printStudentArray(students, coursesPerStudent, numberOfStudents);
+		//factorGivenCourse(students, coursesPerStudent, numberOfStudents, "Advanced TopicounterStudent in C", +5);
+		//printStudentArray(students, coursesPerStudent, numberOfStudents);
+		//studentsToFile(students, coursesPerStudent, numberOfStudents); //this frees all memory. Part B fails if this line runs. uncomment for testing (and comment out Part B)
+		//
+		////Part B
+		//Student* transformedStudents = transformStudentArray(students, coursesPerStudent, numberOfStudents);
+		//writeToBinFile("students.bin", transformedStudents, numberOfStudents);
+		//Student* testReadStudents = readFromBinFile("students.bin");
 
-	//add code to free all arrays of struct Student
+		//add code to free all arrays of struct Student
 
 
-	/*_CrtDumpMemoryLeaks();*/ //uncomment this block to check for heap memory allocation leaks.
-	// Read https://docounterStudent.microsoft.com/en-us/visualstudio/debugger/finding-memory-leaks-using-the-crt-library?view=vs-2019
+		/*_CrtDumpMemoryLeaks();*/ //uncomment this block to check for heap memory allocation leaks.
+		// Read https://docounterStudent.microsoft.com/en-us/visualstudio/debugger/finding-memory-leaks-using-the-crt-library?view=vs-2019
 
 	return 0;
 }
@@ -118,8 +118,8 @@ char*** makeStudentArrayFromFile(const char* fileName, int** coursesPerStudent, 
 {
 	char*** studentList;
 	FILE* studentFile;
-	char temp[1023], *check;
-	int counterStudents = 0, counterCourses = 0, counterLetters = 0; //counterStudent =counterStudent counterCourses= counterCourses counterLetters= counterLetters
+	char temp[1023], * check;
+	int counterStudents = 0;
 	studentFile = fopen(fileName, "r");
 	if (!studentFile) {
 		printf("Error opening file\n");
@@ -131,7 +131,7 @@ char*** makeStudentArrayFromFile(const char* fileName, int** coursesPerStudent, 
 		printf("Memory allocation faild\n");
 		exit(1);
 	}
-	
+
 	for (int i = 0; i < *numberOfStudents; i++) {
 		studentList[i] = (char*)malloc(((*(*coursesPerStudent + i)) * 2) + 1);
 		if (!studentList[i]) {
@@ -140,32 +140,28 @@ char*** makeStudentArrayFromFile(const char* fileName, int** coursesPerStudent, 
 		}
 	}
 
-	//free(*coursesPerStudent);
+	char line[1023];
 
-	
+	while (fgets(line, 1023, studentFile)) {
+		char** arr = split(line, "|", *(*coursesPerStudent + counterStudents) + 1);
 
+		if (!arr) exit(1);
 
-	while (!feof(studentFile)) {
-		char text[1023];
-		fgets(text, 1023, studentFile);
-		const char** temp = split(text, "|", *(*coursesPerStudent + counterStudents) + 1);
-		studentList[counterStudents][0] = temp[0];
-		temp[0] = NULL;
-		for (int i = 1, j=1; i < *(*coursesPerStudent + counterStudents) * 2; i+=2, j++) {
-			const char **courses = split(temp[j], ",", 2);
-			studentList[counterStudents][i] = courses[0];
-			studentList[counterStudents][i + 1] = courses[1];
-			printf("%s", studentList[counterStudents][i]);
-			printf("%s", studentList[counterStudents][i+1]);
-		}
-		for (int i = 1; i < *(*coursesPerStudent + counterStudents); i++) {
-			free(temp[i]);
+		studentList[counterStudents][0] = arr[0];
+
+		//temp[0] = NULL;
+		// ["AVI" / NULL, "Linear Algebra,84" , "Complexity Theory,99", "Infi 1,88","Discrete Mathematics,73","Data Structures,100"]
+		for (int i = 1; i <= *(*coursesPerStudent + counterStudents); i++) {
+			char** courses = split(arr[i], ",", 2);
+			int j = i * 2 - 1;
+			studentList[counterStudents][j] = courses[0];
+			studentList[counterStudents][j + 1] = courses[1];
 		}
 		counterStudents++;
-	}	
-	
- 	printStudentArray(studentList, *coursesPerStudent, *numberOfStudents);
-	
+	}
+
+	printStudentArray(studentList, *coursesPerStudent, *numberOfStudents);
+
 	fclose(studentFile);
 	return studentList;
 }
@@ -181,12 +177,12 @@ void printStudentArray(const char* const* const* students, const int* coursesPer
 {
 	for (int i = 0; i < numberOfStudents; i++)
 	{
-		printf("name: %s\n*********\n", students[i][0]); 
+		printf("name: %s\n*********\n", students[i][0]);
 		for (int j = 1; j <= 2 * coursesPerStudent[i]; j += 2)
 		{
 			printf("course: %s\n", students[i][j]);
 			printf("grade: %s\n", students[i][j + 1]);
-			
+
 		}
 		printf("\n");
 	}
@@ -213,10 +209,10 @@ Student* transformStudentArray(char*** students, const int* coursesPerStudent, i
 }
 
 
-char** split(char* str,const char* delimiter, int coursesPerStudent) {
+char** split(char* str, const char* delimiter, int coursesPerStudent) {
 	int i = 0;
-	char** studentArray;
-	studentArray= (char**)malloc(coursesPerStudent * sizeof(char*));
+	char** studentArray = (char**)malloc(coursesPerStudent * sizeof(char*));
+
 	if (!studentArray) {
 		printf("Memory allocation faild\n");
 		exit(1);
