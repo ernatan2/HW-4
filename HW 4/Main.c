@@ -48,6 +48,7 @@ int main()
 	char*** students = makeStudentArrayFromFile("studentList.txt", &coursesPerStudent, &numberOfStudents);
 	printStudentArray(students, coursesPerStudent, numberOfStudents);
 	factorGivenCourse(students, coursesPerStudent, numberOfStudents, "Advanced Topics in C", +5);
+	free(students, &coursesPerStudent, &numberOfStudents);
 	//studentsToFile(students, coursesPerStudent, numberOfStudents); //this frees all memory. Part B fails if this line runs. uncomment for testing (and comment out Part B)
 
 	//Part B
@@ -153,6 +154,7 @@ char*** makeStudentArrayFromFile(const char* fileName, int** coursesPerStudent, 
 
 void factorGivenCourse(char** const* students, const int* coursesPerStudent, int numberOfStudents, const char* courseName, int factor)
 {
+	
 	if (factor < -20 || factor>20)
 	{
 		printf("factor out of range!\n");
@@ -169,7 +171,7 @@ void factorGivenCourse(char** const* students, const int* coursesPerStudent, int
 				if ((x + factor) > 0 && (x + factor) < 100)
 				{
 					x += factor;
-					students[i][j + 1] = itoa(x, students[i][j + 1], 10);
+					snprintf(students[i][j+1], 10, "%d", x);
 				}
 			}
 		}
@@ -223,12 +225,38 @@ void writeToBinFile(const char* fileName, Student* students, int numberOfStudent
 
 Student* readFromBinFile(const char* fileName)
 {
-	//add code here
+	FILE* studentFile;
+	studentFile = fopen(fileName, studentFile);
+	Student* studentList;
+
 }
 
 Student* transformStudentArray(char*** students, const int* coursesPerStudent, int numberOfStudents)
 {
-	//add code here
+
+	Student** student_array;
+	student_array = (Student**)malloc(sizeof(Student) * numberOfStudents);
+	if (!student_array)
+	{
+		printf("bad allocation!");
+		exit(1);
+	}
+
+	for (int i = 0; i < numberOfStudents; i++)
+	{
+		strcpy(*student_array[i].name, students[i][0]);
+		*student_array[i].grades = (StudentCourseGrade*)malloc(sizeof(StudentCourseGrade) * coursesPerStudent[i]);
+		for (int j = 1; j <= 2 * coursesPerStudent[i]; j += 2)
+		{
+			*student_array[i].grades[i].courseName = students[i][j];
+		}
+
+
+	}
+
+
+
+
 }
 
 
