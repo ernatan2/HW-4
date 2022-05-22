@@ -35,9 +35,9 @@ char** split(char* str, const char* delimiter, int coursesPerStudent);
 void freeStr(char*** str, int** coursesPerStudent, int* numberOfStudents);
 
 //Part B
-Student* transformStudentArray(char*** students, const int* coursesPerStudent, int numberOfStudents);
-void writeToBinFile(const char* fileName, Student* students, int numberOfStudents);
-Student* readFromBinFile(const char* fileName);
+//Student* transformStudentArray(char*** students, const int* coursesPerStudent, int numberOfStudents);
+//void writeToBinFile(const char* fileName, Student* students, int numberOfStudents);
+//Student* readFromBinFile(const char* fileName);
 
 int main()
 {
@@ -52,9 +52,9 @@ int main()
 	//studentsToFile(students, coursesPerStudent, numberOfStudents); //this frees all memory. Part B fails if this line runs. uncomment for testing (and comment out Part B)
 
 	//Part B
-	Student* transformedStudents = transformStudentArray(students, coursesPerStudent, numberOfStudents);
-	writeToBinFile("students.bin", transformedStudents, numberOfStudents);
-	Student* testReadStudents = readFromBinFile("students.bin");
+	//Student* transformedStudents = transformStudentArray(students, coursesPerStudent, numberOfStudents);
+	//writeToBinFile("students.bin", transformedStudents, numberOfStudents);
+	//Student* testReadStudents = readFromBinFile("students.bin");
 
 	//add code to free all arrays of struct Student
 
@@ -127,7 +127,7 @@ char*** makeStudentArrayFromFile(const char* fileName, int** coursesPerStudent, 
 		exit(1);
 	}
 	for (int i = 0; i < *numberOfStudents; i++) {
-		studentList[i] = (char*)malloc((((*(*coursesPerStudent + i)) * 2) + 1)* sizeof(char*));
+		studentList[i] = (char*)malloc((((*(*coursesPerStudent + i)) * 2) + 1) * sizeof(char*));
 		if (!studentList[i]) {
 			printf("Memory allocation faild\n");
 			exit(1);
@@ -154,7 +154,7 @@ char*** makeStudentArrayFromFile(const char* fileName, int** coursesPerStudent, 
 
 void factorGivenCourse(char** const* students, const int* coursesPerStudent, int numberOfStudents, const char* courseName, int factor)
 {
-	
+
 	if (factor < -20 || factor>20)
 	{
 		printf("factor out of range!\n");
@@ -171,7 +171,7 @@ void factorGivenCourse(char** const* students, const int* coursesPerStudent, int
 				if ((x + factor) > 0 && (x + factor) < 100)
 				{
 					x += factor;
-					snprintf(students[i][j+1], 10, "%d", x);
+					snprintf(students[i][j + 1], 10, "%d", x);
 				}
 			}
 		}
@@ -211,51 +211,8 @@ void studentsToFile(char*** students, int* coursesPerStudent, int numberOfStuden
 			else fprintf(studentFile, "%s %s", students[i][j + 1], "|"); // writing the grade of the course to the text file.
 		}
 	}
-	// ???? ????? ?? ??????? ?? ???? ?????????,???? ???????? ????? ?? ??????,
-	//?? ?????? ????? ????????? ?? ?? ??????, ??? ???????? ??????? ???? ?? ?????? ????? ????? ?????? ??????? ???????? 3
 	fclose(studentFile);
-
-
-}
-
-void writeToBinFile(const char* fileName, Student* students, int numberOfStudents)
-{
-	//add code here
-}
-
-Student* readFromBinFile(const char* fileName)
-{
-	FILE* studentFile;
-	studentFile = fopen(fileName, studentFile);
-	Student* studentList;
-
-}
-
-Student* transformStudentArray(char*** students, const int* coursesPerStudent, int numberOfStudents)
-{
-
-	Student** student_array;
-	student_array = (Student**)malloc(sizeof(Student) * numberOfStudents);
-	if (!student_array)
-	{
-		printf("bad allocation!");
-		exit(1);
-	}
-
-	for (int i = 0; i < numberOfStudents; i++)
-	{
-		strcpy(*student_array[i].name, students[i][0]);
-		*student_array[i].grades = (StudentCourseGrade*)malloc(sizeof(StudentCourseGrade) * coursesPerStudent[i]);
-		for (int j = 1; j <= 2 * coursesPerStudent[i]; j += 2)
-		{
-			*student_array[i].grades[i].courseName = students[i][j];
-		}
-
-
-	}
-
-
-
+	freeStr(students, &coursesPerStudent, &numberOfStudents);
 
 }
 
@@ -293,7 +250,10 @@ void freeStr(char*** str, int** coursesPerStudent, int* numberOfStudents) {
 	free(str);
 }
 
-//kakakak
+
+
+
+
 
 
 
