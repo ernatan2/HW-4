@@ -32,11 +32,12 @@ void printStudentArray(const char* const* const* students, const int* coursesPer
 void factorGivenCourse(char** const* students, const int* coursesPerStudent, int numberOfStudents, const char* courseName, int factor);
 void studentsToFile(char*** students, int* coursesPerStudent, int numberOfStudents);
 char** split(char* str, const char* delimiter, int coursesPerStudent);
+void freeStr(char*** str, int** coursesPerStudent, int* numberOfStudents);
 
 //Part B
-Student* transformStudentArray(char*** students, const int* coursesPerStudent, int numberOfStudents);
-void writeToBinFile(const char* fileName, Student* students, int numberOfStudents);
-Student* readFromBinFile(const char* fileName);
+//Student* transformStudentArray(char*** students, const int* coursesPerStudent, int numberOfStudents);
+//void writeToBinFile(const char* fileName, Student* students, int numberOfStudents);
+//Student* readFromBinFile(const char* fileName);
 
 int main()
 {
@@ -45,27 +46,21 @@ int main()
 	int* coursesPerStudent = NULL;
 	int numberOfStudents = 0;
 	char*** students = makeStudentArrayFromFile("studentList.txt", &coursesPerStudent, &numberOfStudents);
+	printStudentArray(students, coursesPerStudent, numberOfStudents);
+	factorGivenCourse(students, coursesPerStudent, numberOfStudents, "Advanced Topics in C", +5);
+	free(students, &coursesPerStudent, &numberOfStudents);
+	//studentsToFile(students, coursesPerStudent, numberOfStudents); //this frees all memory. Part B fails if this line runs. uncomment for testing (and comment out Part B)
 
-	/*int* coursesPerStudent = NULL;
-	int numberOfStudents = 0;
-	countStudentsAndCourses("studentList.txt",
-		&coursesPerStudent, &numberOfStudents);*/
+	//Part B
+	//Student* transformedStudents = transformStudentArray(students, coursesPerStudent, numberOfStudents);
+	//writeToBinFile("students.bin", transformedStudents, numberOfStudents);
+	//Student* testReadStudents = readFromBinFile("students.bin");
 
-		//printStudentArray(students, coursesPerStudent, numberOfStudents);
-		//factorGivenCourse(students, coursesPerStudent, numberOfStudents, "Advanced TopicounterStudent in C", +5);
-		//printStudentArray(students, coursesPerStudent, numberOfStudents);
-		//studentsToFile(students, coursesPerStudent, numberOfStudents); //this frees all memory. Part B fails if this line runs. uncomment for testing (and comment out Part B)
-		//
-		////Part B
-		//Student* transformedStudents = transformStudentArray(students, coursesPerStudent, numberOfStudents);
-		//writeToBinFile("students.bin", transformedStudents, numberOfStudents);
-		//Student* testReadStudents = readFromBinFile("students.bin");
-
-		//add code to free all arrays of struct Student
+	//add code to free all arrays of struct Student
 
 
-		/*_CrtDumpMemoryLeaks();*/ //uncomment this block to check for heap memory allocation leaks.
-		// Read https://docounterStudent.microsoft.com/en-us/visualstudio/debugger/finding-memory-leaks-using-the-crt-library?view=vs-2019
+	/*_CrtDumpMemoryLeaks();*/ //uncomment this block to check for heap memory allocation leaks.
+	// Read https://docs.microsoft.com/en-us/visualstudio/debugger/finding-memory-leaks-using-the-crt-library?view=vs-2019
 
 	return 0;
 }
@@ -132,7 +127,7 @@ char*** makeStudentArrayFromFile(const char* fileName, int** coursesPerStudent, 
 		exit(1);
 	}
 	for (int i = 0; i < *numberOfStudents; i++) {
-		studentList[i] = (char*)malloc(((*(*coursesPerStudent + i)) * 2) + 1);
+		studentList[i] = (char*)malloc((((*(*coursesPerStudent + i)) * 2) + 1) * sizeof(char*));
 		if (!studentList[i]) {
 			printf("Memory allocation faild\n");
 			exit(1);
@@ -152,13 +147,14 @@ char*** makeStudentArrayFromFile(const char* fileName, int** coursesPerStudent, 
 		counterStudents++;
 	}
 	fclose(studentFile);
-	return NULL;
+	return studentList;
 }
 
 
 
 void factorGivenCourse(char** const* students, const int* coursesPerStudent, int numberOfStudents, const char* courseName, int factor)
 {
+
 	if (factor < -20 || factor>20)
 	{
 		printf("factor out of range!\n");
@@ -175,7 +171,7 @@ void factorGivenCourse(char** const* students, const int* coursesPerStudent, int
 				if ((x + factor) > 0 && (x + factor) < 100)
 				{
 					x += factor;
-					students[i][j + 1] = itoa(x, students[i][j + 1], 10);
+					snprintf(students[i][j + 1], 10, "%d", x);
 				}
 			}
 		}
@@ -215,26 +211,9 @@ void studentsToFile(char*** students, int* coursesPerStudent, int numberOfStuden
 			else fprintf(studentFile, "%s %s", students[i][j + 1], "|"); // writing the grade of the course to the text file.
 		}
 	}
-	// ???? ????? ?? ??????? ?? ???? ?????????,???? ???????? ????? ?? ??????,
-	//?? ?????? ????? ????????? ?? ?? ??????, ??? ???????? ??????? ???? ?? ?????? ????? ????? ?????? ??????? ???????? 3
 	fclose(studentFile);
+	freeStr(students, &coursesPerStudent, &numberOfStudents);
 
-
-}
-
-void writeToBinFile(const char* fileName, Student* students, int numberOfStudents)
-{
-	//add code here
-}
-
-Student* readFromBinFile(const char* fileName)
-{
-	//add code here
-}
-
-Student* transformStudentArray(char*** students, const int* coursesPerStudent, int numberOfStudents)
-{
-	//add code here
 }
 
 
@@ -260,10 +239,14 @@ char** split(char* str, const char* delimiter, int coursesPerStudent) {
 	return studentArray;
 }
 
-
-
-
-
-
-
+void freeStr(char*** str, int** coursesPerStudent, int* numberOfStudents) {
+	for (int i = 0; i < *numberOfStudents; i++) {
+		for (int j = 0; j < *(*coursesPerStudent + j) * 2 + 1; j++) {
+			free(str[i][j]);
+		}
+		free(str[i]);
+	}
+	free(*coursesPerStudent);
+	free(str);
+}
 
