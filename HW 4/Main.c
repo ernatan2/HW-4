@@ -293,6 +293,8 @@ void freeStr(char*** str, int** coursesPerStudent, int* numberOfStudents) {
 	free(str);
 }
 
+//kakakak
+
 
 
 
